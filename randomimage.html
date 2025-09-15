@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>랜덤 이미지</title>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #0b1020; --muted: #94a3b8; --text: #e5e7eb;
+      --border: #1f2937; --accent: #e91e63;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text); background: radial-gradient(1200px 600px at 20% -10%, #0b1225 0%, var(--bg) 60%), #0f172a;
+      display: grid; grid-template-rows: auto 1fr auto; gap: 16px; padding: 16px;
+    }
+    h1 { margin: 0; font-size: 20px; }
+    .section { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .top { display: grid; gap: 12px; align-items: center; justify-items: center; }
+    .display {
+      position: relative; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden;
+      background: radial-gradient(circle at 30% 30%, rgba(233,30,99,0.18), rgba(233,30,99,0.06) 60%, transparent 100%);
+      border: 1px solid var(--border);
+    }
+    .display img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .heart-overlay { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+    .heart { font-size: 64px; opacity: 0.2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+    .bottom { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    button {
+      appearance: none; border: 1px solid rgba(233,30,99,0.5); background: linear-gradient(180deg, #ef3a77, #e91e63);
+      color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .hint { color: var(--muted); font-size: 12px; text-align: center; }
+    .timer { min-width: 64px; text-align: center; padding: 8px 12px; border: 1px dashed var(--border); border-radius: 10px; color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 700; }
+  </style>
+  <noscript>이 페이지를 사용하려면 자바스크립트를 활성화하세요.</noscript>
+</head>
+<body>
+  <div class="section">
+    <button onclick="location.href='main.html'">메인으로</button>
+  </div>
+  <div class="section top">
+    <h1>랜덤 이미지</h1>
+    <div class="display" aria-live="polite" aria-atomic="true">
+      <img id="displayImage" alt="랜덤 이미지" src="" />
+      <div class="heart-overlay" aria-hidden="true">
+        <div class="heart">❤</div>
+      </div>
+    </div>
+    <div class="hint">버튼을 누르면 5초간 빠르게 전환된 후 최종 이미지가 표시됩니다.</div>
+  </div>
+
+  <div class="section bottom">
+    <button id="randomBtn" type="button">랜덤 이미지</button>
+    <div class="timer" id="timer">5.0s</div>
+  </div>
+
+  <script>
+    (function () {
+      const imagePaths = [
+        'ayimage/1752825504623.jpg',
+        'ayimage/1752904857065.jpg',
+        'ayimage/1753936177438.jpg',
+        'ayimage/1753936177515.jpg',
+        'ayimage/1754471316282.jpg',
+        'ayimage/1755152094174.jpg',
+        'ayimage/20250805_164642001.jpg',
+        'ayimage/20250805_164908530.jpg'
+      ];
+
+      const displayImage = document.getElementById('displayImage');
+      const randomBtn = document.getElementById('randomBtn');
+      const timerEl = document.getElementById('timer');
+
+      imagePaths.forEach(src => { const img = new Image(); img.src = src; });
+
+      let isAnimating = false;
+      let cycleTimerId = null;
+      let stopTimerId = null;
+      let countdownInterval = null;
+
+      function getRandomIndex() { return Math.floor(Math.random() * imagePaths.length); }
+      function formatSec(sec) { return `${sec.toFixed(1)}s`; }
+
+      function startAnimation() {
+        if (isAnimating || imagePaths.length === 0) return;
+        isAnimating = true;
+        randomBtn.disabled = true;
+
+        let remain = 5.0;
+        timerEl.textContent = formatSec(remain);
+        countdownInterval = setInterval(() => {
+          remain = Math.max(0, remain - 0.1);
+          timerEl.textContent = formatSec(remain);
+        }, 100);
+
+        cycleTimerId = setInterval(() => {
+          const idx = getRandomIndex();
+          displayImage.src = imagePaths[idx];
+        }, 90);
+
+        stopTimerId = setTimeout(() => {
+          if (cycleTimerId) clearInterval(cycleTimerId);
+          if (countdownInterval) clearInterval(countdownInterval);
+          timerEl.textContent = '0.0s';
+          const finalIdx = getRandomIndex();
+          displayImage.src = imagePaths[finalIdx];
+          isAnimating = false;
+          randomBtn.disabled = false;
+        }, 5000);
+      }
+
+      randomBtn.addEventListener('click', startAnimation);
+      window.addEventListener('beforeunload', () => {
+        if (cycleTimerId) clearInterval(cycleTimerId);
+        if (stopTimerId) clearTimeout(stopTimerId);
+        if (countdownInterval) clearInterval(countdownInterval);
+      });
+    })();
+  </script>
+</body>
+</html>
