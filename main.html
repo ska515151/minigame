@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>게임 모음</title>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #0b1020; --muted: #94a3b8; --text: #e5e7eb;
+      --border: #1f2937; --accent: #22d3ee;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text); background: radial-gradient(1200px 600px at 20% -10%, #0b1225 0%, var(--bg) 60%), #0f172a;
+      display: grid; grid-template-rows: auto 1fr auto; gap: 16px; padding: 16px;
+    }
+    h1 { margin: 0; font-size: 22px; text-align: center; }
+    .section { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .grid { display: grid; gap: 16px; }
+    @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    .card {
+      display: grid; gap: 8px; align-content: start; padding: 16px; border: 1px solid var(--border); border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+    .card h2 { margin: 0; font-size: 18px; }
+    .card p { margin: 0; color: var(--muted); font-size: 13px; }
+    a.btn {
+      appearance: none; border: 1px solid rgba(59,130,246,0.4); background: linear-gradient(180deg, #3b82f6, #2563eb);
+      color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; text-decoration: none; text-align: center;
+      display: inline-block; width: max-content;
+    }
+    .center { display: grid; place-items: center; gap: 16px; }
+    .footer { color: var(--muted); text-align: center; font-size: 12px; }
+  </style>
+  <noscript>이 페이지를 사용하려면 자바스크립트를 활성화하세요.</noscript>
+</head>
+<body>
+  <div class="section">
+    <h1>성윤이의 미니 게임 모음</h1>
+    <p class="footer" style="margin-top:8px">원하는 게임을 선택해 시작하세요.</p>
+  </div>
+
+  <div class="section">
+    <div class="grid">
+      <div class="card">
+        <h2>로또 번호 생성기</h2>
+        <p>6개 번호와 보너스 1개를 5초 후 추첨합니다.</p>
+        <a class="btn" href="lotto.html" aria-label="로또 번호 생성기로 이동">열기</a>
+      </div>
+      <div class="card">
+        <h2>가위바위보 게임</h2>
+        <p>참가자를 설정하고 컴퓨터와 대결하세요.</p>
+        <a class="btn" href="finger.html" aria-label="가위바위보 게임으로 이동">열기</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© 2025 Mini Games</div>
+</body>
+</html>
+
+

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>로또 번호 생성기</title>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #0b1020; --muted: #94a3b8; --text: #e5e7eb;
+      --border: #1f2937; --accent: #22d3ee; --bonus: #f59e0b; --ball: #111827;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text); background: radial-gradient(1200px 600px at 20% -10%, #0b1225 0%, var(--bg) 60%), #0f172a;
+      display: grid; grid-template-rows: auto 1fr auto; gap: 16px; padding: 16px;
+    }
+    h1 { margin: 0; font-size: 20px; }
+    .section { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .top { display: grid; gap: 12px; align-items: center; justify-items: center; }
+    .balls { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    .ball {
+      width: 64px; height: 64px; border-radius: 999px; border: 1px solid var(--border);
+      background: radial-gradient(120px 60px at 30% 20%, rgba(255,255,255,0.08), rgba(255,255,255,0.02)), var(--ball);
+      display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-variant-numeric: tabular-nums;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      user-select: none; color: #e5e7eb; position: relative;
+    }
+    .ball.bonus {
+      border-color: rgba(245, 158, 11, 0.6);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05)), var(--ball);
+      color: #fde68a;
+    }
+    .plus { color: var(--muted); font-size: 20px; padding: 0 4px; }
+    .bottom { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    button {
+      appearance: none; border: 1px solid rgba(59,130,246,0.4); background: linear-gradient(180deg, #3b82f6, #2563eb);
+      color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .timer { min-width: 64px; text-align: center; padding: 8px 12px; border: 1px dashed var(--border); border-radius: 10px; color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 700; }
+    .legend { color: var(--muted); font-size: 12px; text-align: center; }
+    .rolling { animation: flicker 100ms linear infinite; }
+    @keyframes flicker { from { filter: brightness(1); } to { filter: brightness(1.25); } }
+  </style>
+  <!-- DB는 사용하지 않습니다. 요구사항은 프론트 JS만으로 충족됩니다. -->
+  <script>
+    // 유틸
+    function getRandomIntInclusive(min, max) {
+      const mi = Math.ceil(min), ma = Math.floor(max);
+      return Math.floor(Math.random() * (ma - mi + 1)) + mi;
+    }
+    function sampleUniqueNumbers(count, min, max) {
+      const poolSize = max - min + 1;
+      if (count > poolSize) throw new Error('요청한 개수가 범위를 초과합니다.');
+      const set = new Set();
+      while (set.size < count) {
+        set.add(getRandomIntInclusive(min, max));
+      }
+      return Array.from(set);
+    }
+    function formatSec(sec) { return `${sec.toFixed(1)}s`; }
+    function $(sel) { return document.querySelector(sel); }
+    function $all(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+    let rollingInterval = null;
+    let stopTimeout = null;
+    let countdownInterval = null;
+
+    function setDisabled(disabled) {
+      const btn = $('#start-btn');
+      btn.disabled = disabled;
+    }
+
+    function setBallsText(texts) {
+      const balls = $all('.ball');
+      balls.forEach((b, i) => { b.textContent = texts[i] ?? '❔'; });
+    }
+
+    function startRolling() {
+      const balls = $all('.ball');
+      balls.forEach(b => b.classList.add('rolling'));
+      rollingInterval = setInterval(() => {
+        const rollingValues = balls.map(() => String(getRandomIntInclusive(1, 45)));
+        setBallsText(rollingValues);
+      }, 90);
+    }
+
+    function stopRolling() {
+      const balls = $all('.ball');
+      balls.forEach(b => b.classList.remove('rolling'));
+      if (rollingInterval) clearInterval(rollingInterval);
+      rollingInterval = null;
+    }
+
+    function drawFinalNumbers() {
+      const nums = sampleUniqueNumbers(7, 1, 45);
+      const firstSix = nums.slice(0, 6);
+      const bonus = nums[6];
+      const arranged = [...firstSix.map(n => String(n)), String(bonus)];
+      setBallsText(arranged);
+    }
+
+    function start() {
+      // 초기화
+      if (stopTimeout) clearTimeout(stopTimeout);
+      if (countdownInterval) clearInterval(countdownInterval);
+      stopRolling();
+      setBallsText(['❔','❔','❔','❔','❔','❔','❔']);
+
+      setDisabled(true);
+      startRolling();
+
+      let remain = 5.0;
+      $('#timer').textContent = formatSec(remain);
+      countdownInterval = setInterval(() => {
+        remain = Math.max(0, remain - 0.1);
+        $('#timer').textContent = formatSec(remain);
+      }, 100);
+
+      stopTimeout = setTimeout(() => {
+        clearInterval(countdownInterval);
+        $('#timer').textContent = '0.0s';
+        stopRolling();
+        drawFinalNumbers();
+        setDisabled(false);
+      }, 5000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      $('#start-btn').addEventListener('click', start);
+      setBallsText(['❔','❔','❔','❔','❔','❔','❔']);
+      $('#timer').textContent = formatSec(5.0);
+    });
+  </script>
+  <noscript>이 페이지를 사용하려면 자바스크립트를 활성화하세요.</noscript>
+  <!--
+    기능 요구사항
+    - 상단: 구슬 6개 + 보너스 1개
+    - 하단: 시작 버튼
+    - 시작 후 5초간 빠르게 숫자 변경 애니메이션
+    - 5초 뒤 1~45 중 중복 없는 숫자 7개 표시 (마지막이 보너스)
+  -->
+</head>
+<body>
+  <div class="section">
+    <button onclick="location.href='main.html'">메인으로</button>
+  </div>
+  <div class="section top">
+    <h1>로또 번호 생성기 (6 + 보너스)</h1>
+    <div class="balls" aria-live="polite">
+      <div class="ball" aria-label="번호 1">❔</div>
+      <div class="ball" aria-label="번호 2">❔</div>
+      <div class="ball" aria-label="번호 3">❔</div>
+      <div class="ball" aria-label="번호 4">❔</div>
+      <div class="ball" aria-label="번호 5">❔</div>
+      <div class="ball" aria-label="번호 6">❔</div>
+      <span class="plus" aria-hidden="true">+</span>
+      <div class="ball bonus" aria-label="보너스">❔</div>
+    </div>
+    <div class="legend">시작을 누르면 5초간 굴러가고, 이후 중복 없는 번호가 표시됩니다.</div>
+  </div>
+
+  <div class="section bottom">
+    <button id="start-btn">시작</button>
+    <div class="timer" id="timer">5.0s</div>
+  </div>
+</body>
+</html>
+
+
