@@ -67,6 +67,8 @@
     button:disabled { opacity: .6; cursor: not-allowed; }
     .timer { min-width: 64px; text-align: center; padding: 8px 12px; border: 1px dashed var(--border); border-radius: 10px; color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 700; }
     .legend { color: var(--muted); font-size: 12px; text-align: center; }
+    /* Hide numeric participant count and its label */
+    label[for="count"], #count { display: none; }
   </style>
 </head>
 <body>
