@@ -232,6 +232,15 @@
     }
 
     // Events
+    function allParticipantsSelected() {
+      const n = Number(countInput.value);
+      for (let i = 0; i < n; i++) {
+        const card = participantsWrap.querySelector(`.participant[data-index="${i}"]`);
+        if (!card || !card.dataset.choice) return false;
+      }
+      return true;
+    }
+
     countInput.addEventListener('input', () => {
       let n = Math.max(1, Math.min(5, Number(countInput.value) || 1));
       countInput.value = String(n);
@@ -240,6 +249,10 @@
     });
 
     startBtn.addEventListener('click', () => {
+      if (!allParticipantsSelected()) {
+        alert('가위바위보를 선택해주세요');
+        return;
+      }
       if (rollingTimeout) clearTimeout(rollingTimeout);
       if (countdownInterval) clearInterval(countdownInterval);
       startRound();
