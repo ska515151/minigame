@@ -129,11 +129,7 @@
       wrap.className = 'participant';
       wrap.innerHTML = `
         <div>
-          <label for="name-${i}">이름 (${i+1})</label>
-          <input id="name-${i}" type="text" placeholder="이름 입력" />
-        </div>
-        <div>
-          <label>선택</label>
+          <label>참가자 ${i+1}</label>
           <div class="rps" role="group" aria-label="가위바위보 선택" data-index="${i}">
             <button type="button" class="rps-btn" data-value="scissors" aria-pressed="false">✌</button>
             <button type="button" class="rps-btn" data-value="rock" aria-pressed="false">✊</button>
@@ -169,9 +165,6 @@
       countInput.disabled = disabled;
       const allBtns = participantsWrap.querySelectorAll('.rps-btn');
       allBtns.forEach(b => b.disabled = disabled);
-      for (let i = 0; i < n; i++) {
-        el(`name-${i}`).disabled = disabled;
-      }
     }
 
     function startRolling() {
