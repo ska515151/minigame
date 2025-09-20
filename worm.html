@@ -177,6 +177,13 @@
                 <button class="control-btn" onclick="changeDirection('down')">↓</button>
                 <button class="control-btn" onclick="changeDirection('right')">→</button>
             </div>
+            
+            <div style="margin-top: 15px; font-size: 14px; color: #666;">
+                <p><strong>조작 방법:</strong></p>
+                <p>• 화면 버튼 클릭 또는 키보드 방향키 (↑↓←→)</p>
+                <p>• WASD 키로도 조작 가능</p>
+                <p>• 스페이스바로 게임 시작</p>
+            </div>
         </div>
     </div>
 
@@ -197,9 +204,42 @@
         let gameRunning = false;
         let gameInterval;
         let score = 0;
+        
+        // 오디오 컨텍스트 생성
+        let audioContext;
+        
+        // 오디오 초기화
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Web Audio API not supported');
+            }
+        }
+        
+        // 버튼 클릭 소리 생성
+        function playButtonSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
 
         // 페이지 로드 시 게임 초기화
         window.addEventListener('load', function() {
+            initAudio();
             initGame();
         });
 
@@ -353,6 +393,7 @@
             
             if (opposites[newDirection] !== direction) {
                 direction = newDirection;
+                playButtonSound(); // 방향 변경 시 소리 재생
             }
         }
 
@@ -370,28 +411,54 @@
             initGame();
         }
 
-        // 키보드 이벤트
+        // 키보드 이벤트 (게임이 시작되면 방향키로 조작 가능)
         document.addEventListener('keydown', function(e) {
+            // 게임이 실행 중일 때만 방향키 입력 허용
             if (!gameRunning) return;
             
             switch(e.key) {
                 case 'ArrowUp':
+                case 'w':
+                case 'W':
                     e.preventDefault();
                     changeDirection('up');
                     break;
                 case 'ArrowDown':
+                case 's':
+                case 'S':
                     e.preventDefault();
                     changeDirection('down');
                     break;
                 case 'ArrowLeft':
+                case 'a':
+                case 'A':
                     e.preventDefault();
                     changeDirection('left');
                     break;
                 case 'ArrowRight':
+                case 'd':
+                case 'D':
                     e.preventDefault();
                     changeDirection('right');
                     break;
+                case ' ':
+                    // 스페이스바로 게임 시작/일시정지
+                    e.preventDefault();
+                    if (!gameRunning) {
+                        startSnakeGame();
+                    }
+                    break;
             }
+        });
+        
+        // 방향키 버튼에 클릭 이벤트 추가
+        document.addEventListener('DOMContentLoaded', function() {
+            const directionButtons = document.querySelectorAll('.control-btn');
+            directionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    playButtonSound(); // 버튼 클릭 시 소리 재생
+                });
+            });
         });
     </script>
 </body>
